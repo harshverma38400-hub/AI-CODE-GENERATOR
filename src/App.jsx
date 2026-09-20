@@ -1,6 +1,7 @@
 
 import { useCallback, useState } from 'react'
 import './App.css'
+import { codegenerator } from './helper/api'
 
 const  App =()=>  {
 
@@ -10,6 +11,7 @@ const  App =()=>  {
     codegenerator:null,
     loading:false
   })
+
 
    const handlecheck =useCallback((e)=>{
       setinfo((prev)=>({...prev,userQuery:e.target.value,error:''}))     
@@ -28,12 +30,14 @@ const  App =()=>  {
          setinfo((prev)=>({...prev,loading:true,error:''}))
         //apicall
 
+        codegenerator()
+
    }
   ,[info?.userQuery])
 
    
    
-  
+
  // console.log(import.meta.env.VITE_GOOGLE_API_KEY) 
   return (
    <div className='codegenratorparent-conatiner'>
@@ -62,14 +66,12 @@ const  App =()=>  {
         </div>):(
 
         <p>
-        Cookin’ your code…
+        Cookin’ your project…
         </p> )}
         
       </div>
       )}        
     </div>
-        
-
    </div>
   )
 }

@@ -1,6 +1,5 @@
 
 
-
 #root{
 
   height: 100vh;
@@ -115,7 +114,7 @@
         border-radius: 100%;
         border: 3px solid #eaeaea;
         border-top:2px solid rgb(14, 194, 239);
-        animation: spin 1s linear infinite;  /*spin kra lga tar and  1s ma ak rotation and linear ak hi speend ma and infinity*/
+        animation: spin 1s linear infinite;  /*spin krta hai lga tar and  1s ma ak rotation and linear ak hi speed ma and infinity*/
       }
 
      }
