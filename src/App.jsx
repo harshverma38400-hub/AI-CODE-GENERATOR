@@ -1,7 +1,7 @@
 
 import { useCallback, useState } from 'react'
 import './App.css'
-import { codegenerator } from './helper/api'
+import { codegenerator } from "./helper/api"
 
 const  App =()=>  {
 
@@ -19,7 +19,7 @@ const  App =()=>  {
 
    //console.log(info);
 
-   const handlegenerate = useCallback(()=>{
+   const handlegenerate = useCallback( async()=>{
       
         if(!info?.userQuery.length){
 
@@ -29,11 +29,22 @@ const  App =()=>  {
             // before api call its show loading
          setinfo((prev)=>({...prev,loading:true,error:''}))
         //apicall
-
-        codegenerator()
-
+         try {
+          const responce = await codegenerator( info?.userQuery)
+          console.log(responce);
+          
+         
+          
+         } catch (error) {
+          setinfo((prev)=>({...prev,error:error?.message || "we failed here"}))
+          
+         }
+         finally{
+          setinfo((prev)=>({...prev,loading:false}))
+         }
+        
    }
-  ,[info?.userQuery])
+  ,[info?.userQuery,info?.loading])
 
    
    
