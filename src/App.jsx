@@ -1,90 +1,115 @@
+import { useCallback, useState } from "react";
+import "./App.css";
+import { codegenerator } from "./helper/api";
 
-import { useCallback, useState } from 'react'
-import './App.css'
-import { codegenerator } from "./helper/api"
+const App = () => {
+  const [info, setinfo] = useState({
+    userQuery: "",
+    error: "",
+    codegenerator: "",
+    loading: false,
+  });
 
-const  App =()=>  {
+  const handlecheck = useCallback((e) => {
+    setinfo((prev) => ({  ...prev, userQuery: e.target.value,error: "",}));
+  }, []);
 
-  const [info,setinfo]=useState({
-    userQuery:"",
-    error:"",
-    codegenerator:null,
-    loading:false
-  })
+  const handlegenerate = useCallback(async () => {
+    if (!info.userQuery.trim()) {
+      setinfo((prev) => ({...prev,error: "Enter your prompt",}));
+      return;
+    }
 
+    setinfo((prev) => ({...prev,loading: true,error: "",}));
 
-   const handlecheck =useCallback((e)=>{
-      setinfo((prev)=>({...prev,userQuery:e.target.value,error:''}))     
-   },[])
+    try {
+      const response = await codegenerator(info.userQuery);
 
-   //console.log(info);
+      console.log("API RESPONSE:", response);
 
-   const handlegenerate = useCallback( async()=>{
+      const componentCode = response?.candidates?.[0]?.content?.parts?.[0]?.text;
+      let Component = new Function(
+        "React",
+        `
+        try {
+          ${componentCode}
       
-        if(!info?.userQuery.length){
-
-           return setinfo((prev)=>({...prev,error:"enter ur prompt"}))
-          
+          return GeneratedComponent;
+        } catch (error) {
+          throw error;
         }
-            // before api call its show loading
-         setinfo((prev)=>({...prev,loading:true,error:''}))
-        //apicall
-         try {
-          const responce = await codegenerator( info?.userQuery)
-          console.log(responce);
-          
-         
-          
-         } catch (error) {
-          setinfo((prev)=>({...prev,error:error?.message || "we failed here"}))
-          
-         }
-         finally{
-          setinfo((prev)=>({...prev,loading:false}))
-         }
-        
-   }
-  ,[info?.userQuery,info?.loading])
+        `
+      )(React);
 
-   
-   
+      if (!componentCode) {
+        throw new Error("No generated content received from API");
+      }
 
- // console.log(import.meta.env.VITE_GOOGLE_API_KEY) 
-  return (
-   <div className='codegenratorparent-conatiner'>
+      setinfo((prev) => ({
+        ...prev,
+        codegenerator: <Component/>,
+      }));
+    }
     
-    <div className='input-container'>
-    <textarea
-  className="content-writesection"
-  placeholder="write what ever you want to  make bitch"
-  value={info.userQuery}
-  onChange={handlecheck}
-/>
-<button className='generate-anything' onClick={handlegenerate}>Generate</button>
-    </div>
-   
-    <div className='preview-container'>
+    catch (error) {
+      console.error("GENERATION ERROR:", error);
 
-      {info.error && <div className='error-message'>{info?.error} </div>}
+      setinfo((prev) => ({ ...prev,error: error?.message || "Something went wrong",}));
+    }
+    
+    finally {
+      setinfo((prev) => ({...prev,loading: false,}));
+    }
+  }, [info.userQuery]);
 
-    { info.codegenerator? ( info.codegenerator ):(
-      <div className='empty-message'>
+  return (
+    <div className="codegenratorparent-conatiner">
 
-       {info.loading?(<div className='loading-continer'> 
-        <div className='loading-spinner'>
-            </div >
-            <span>Generate </span>
-        </div>):(
+      <div className="input-container">
+        <textarea
+          className="content-writesection"
+          placeholder="Write what you want to create..."
+          value={info.userQuery}
+          onChange={handlecheck}
+        />
 
-        <p>
-        Cookin’ your project…
-        </p> )}
-        
+        <button
+          className="generate-anything"
+          onClick={handlegenerate}
+          disabled={info.loading}
+        >
+          {info.loading ? "Generating..." : "Generate"}
+        </button>
       </div>
-      )}        
-    </div>
-   </div>
-  )
-}
 
-export default App
+      <div className="preview-container">
+
+        {info.error && (
+          <div className="error-message">
+            {info.error}
+          </div>
+        )}
+
+        {info.loading ? (
+          <div className="empty-message">
+            <div className="loading-continer">
+              <div className="loading-spinner"></div>
+              <span>Generating...</span>
+            </div>
+          </div>
+        ) : info.codegenerator ? (
+          <pre className="generated-code">
+            {info.codegenerator}
+          </pre>
+        ) : (
+          <div className="empty-message">
+            <p>Cookin’ your project…</p>
+          </div>
+        )}
+
+      </div>
+    </div>
+  );
+};
+
+export default App;
